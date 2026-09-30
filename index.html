@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="TEAM M044 browser-based 3-DOF trajectory optimization simulator">
+  <title>TEAM M044 | Trajectory Optimization Simulator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#overview" aria-label="TEAM M044 home">
+      <span class="brand-mark">M044</span><span><b>Trajectory Lab</b><small>Final-design simulation workspace</small></span>
+    </a>
+    <nav>
+      <button class="nav-btn active" data-view="overview">Overview</button>
+      <button class="nav-btn" data-view="scenario">Single Scenario</button>
+      <button class="nav-btn" data-view="campaign">50-Case Campaign</button>
+      <button class="nav-btn" data-view="verification">Verification</button>
+    </nav>
+    <span class="status"><i></i> Offline-ready</span>
+  </header>
+
+  <main>
+    <section id="overview" class="view active">
+      <div class="hero">
+        <div>
+          <span class="eyebrow">SENIOR DESIGN · TEAM M044</span>
+          <h1>Trajectory optimization,<br><em>made visible.</em></h1>
+          <p>An interactive 3-DOF engineering simulator for studying a conceptual interceptor against moving targets. Configure the operating envelope, run deterministic scenarios, and export traceable evidence.</p>
+          <div class="hero-actions"><button class="primary" data-go="scenario">Run a scenario →</button><button class="secondary" data-go="campaign">Open campaign dashboard</button></div>
+        </div>
+        <div class="orbital-card">
+          <canvas id="heroCanvas" width="720" height="480"></canvas>
+          <div class="live-chip"><span></span> LIVE MODEL</div>
+          <div class="orbital-caption"><b>Browser-native numerical engine</b><span>RK4 integration · 10 Hz sensing · bounded guidance</span></div>
+        </div>
+      </div>
+      <div class="metric-strip">
+        <div><strong>300–1000 m</strong><span>Initial slant range</span></div><div><strong>10–35 m/s</strong><span>Target speed</span></div><div><strong>≤ 15 s</strong><span>Closest approach</span></div><div><strong>≥ 80%</strong><span>Per-class target</span></div>
+      </div>
+      <h2>How the system works</h2>
+      <p class="section-lead">Every result follows the same auditable path from inputs to exported evidence.</p>
+      <div class="flow">
+        <article class="ae"><span>01 · Aerospace</span><h3>Scenario & vehicle</h3><p>Set target motion, range, altitude, mass, thrust and aerodynamic parameters.</p></article>
+        <b>→</b><article class="shared"><span>02 · Shared</span><h3>Physics & guidance</h3><p>Propagate target and interceptor states with RK4 and bounded pursuit guidance.</p></article>
+        <b>→</b><article class="ise"><span>03 · ISE</span><h3>Optimize & verify</h3><p>Search the lead multiplier, evaluate requirements and compare time steps.</p></article>
+        <b>→</b><article class="fin"><span>04 · Finance</span><h3>Evidence & decision</h3><p>Export results, trace requirements and support the simulation-only cost case.</p></article>
+      </div>
+      <div class="notice"><b>Engineering status</b><p>This application is a working final-design analysis tool. Results are computational evidence inside the stated model envelope—not physical prototype validation or a real weapon capability claim.</p></div>
+    </section>
+
+    <section id="scenario" class="view">
+      <div class="page-head"><div><span class="eyebrow">INTERACTIVE WORKSPACE</span><h1>Single scenario</h1><p>Change the inputs, run the model, then animate and export the result.</p></div><div class="toolbar"><button id="resetBtn" class="secondary">Reset</button><button id="runBtn" class="primary">▶ Run simulation</button></div></div>
+      <div class="workspace">
+        <aside class="controls card">
+          <h3>Scenario configuration</h3>
+          <label>Target class<select id="targetClass"><option value="constant">Constant velocity</option><option value="accelerating">Accelerating</option><option value="turning">Coordinated turn</option></select></label>
+          <label>Initial slant range <output id="rangeOut">650 m</output><input id="range" type="range" min="300" max="1000" value="650" step="10"></label>
+          <label>Target altitude <output id="altitudeOut">160 m</output><input id="altitude" type="range" min="50" max="300" value="160" step="5"></label>
+          <label>Target speed <output id="speedOut">22 m/s</output><input id="speed" type="range" min="10" max="35" value="22" step="1"></label>
+          <label>Heading <output id="headingOut">145°</output><input id="heading" type="range" min="0" max="359" value="145"></label>
+          <label>Measurement mode<select id="noise"><option value="noisy">Noisy, 10 Hz</option><option value="ideal">Ideal</option></select></label>
+          <details><summary>Vehicle assumptions</summary><label>Initial mass <input id="mass" type="number" min="10" max="30" step="0.1" value="18"></label><label>Average thrust <input id="thrust" type="number" min="500" max="3500" step="10" value="1850"></label><label>Burn time <input id="burn" type="number" min="1" max="10" step="0.1" value="8"></label></details>
+          <div class="seed-row"><label>Seed<input id="seed" type="number" value="4401" min="1"></label><button id="randomSeed" title="Generate seed">↻</button></div>
+        </aside>
+        <div class="results">
+          <div class="result-grid"><article><span>Minimum separation</span><strong id="missMetric">—</strong><small id="missSub">Run the simulation</small></article><article><span>Normalized miss</span><strong id="normMetric">—</strong><small>Threshold ≤ 2%</small></article><article><span>Closest approach</span><strong id="timeMetric">—</strong><small>Limit ≤ 15 s</small></article><article><span>Optimized lead λ</span><strong id="lambdaMetric">—</strong><small>Bounded search</small></article></div>
+          <div class="card viz-card"><div class="card-title"><div><h3>Trajectory plane</h3><span id="animStatus">Ready to simulate</span></div><button id="animateBtn" class="icon-btn" disabled>▶ Animate</button></div><canvas id="trajectoryCanvas" width="1100" height="520"></canvas><div class="legend"><span><i class="blue"></i>Interceptor</span><span><i class="orange"></i>Target</span><span><i class="white"></i>Closest approach</span></div></div>
+          <div class="card chart-card"><div class="card-title"><div><h3>Separation history</h3><span>True relative distance versus time</span></div></div><canvas id="separationCanvas" width="1100" height="320"></canvas></div>
+          <div class="actions"><button id="downloadJson" class="secondary" disabled>Download JSON evidence</button><button id="downloadCsv" class="secondary" disabled>Download trajectory CSV</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="campaign" class="view">
+      <div class="page-head"><div><span class="eyebrow">REPEATABLE ANALYSIS</span><h1>50-case campaign</h1><p>Deterministic coverage of all three target classes across the approved envelope.</p></div><button id="campaignBtn" class="primary">Run 50 cases</button></div>
+      <div id="campaignEmpty" class="empty-state card"><div>50</div><h2>Campaign ready</h2><p>Run the campaign to calculate class-level success, runtime, range coverage and reproducibility evidence.</p></div>
+      <div id="campaignResults" class="hidden">
+        <div class="result-grid campaign-metrics"><article><span>Aggregate success</span><strong id="aggregateSuccess">—</strong><small>Goal ≥ 90%</small></article><article><span>Cases completed</span><strong id="caseCount">—</strong><small>Required ≥ 50</small></article><article><span>Wall-clock runtime</span><strong id="campaignRuntime">—</strong><small>Limit ≤ 60 s</small></article><article><span>Range coverage</span><strong id="rangeCoverage">—</strong><small>Approved 300–1000 m</small></article></div>
+        <div class="campaign-layout"><div class="card"><div class="card-title"><div><h3>Performance by target class</h3><span>Success requires normalized miss ≤ 2% and closest approach ≤ 15 s</span></div></div><div id="classBars" class="class-bars"></div></div><div class="card"><div class="card-title"><div><h3>Campaign scatter</h3><span>Normalized miss by initial range</span></div></div><canvas id="campaignCanvas" width="720" height="430"></canvas></div></div>
+        <div class="card table-card"><div class="card-title"><div><h3>Scenario evidence</h3><span>First 12 cases shown · full dataset available below</span></div><button id="campaignCsv" class="secondary">Download all 50 cases</button></div><div class="table-wrap"><table><thead><tr><th>ID</th><th>Class</th><th>Range</th><th>Speed</th><th>λ</th><th>Min separation</th><th>Time</th><th>Status</th></tr></thead><tbody id="campaignTable"></tbody></table></div></div>
+      </div>
+    </section>
+
+    <section id="verification" class="view">
+      <div class="page-head"><div><span class="eyebrow">TRACEABLE EVIDENCE</span><h1>Verification center</h1><p>Requirements are separated into demonstrated, preliminary, and pending evidence.</p></div><button id="verifyBtn" class="primary">Run convergence check</button></div>
+      <div class="verification-grid">
+        <div class="card"><h3>Numerical convergence</h3><p>Runs the same deterministic scenario at Δt = 0.010 s and 0.005 s, then compares minimum separation and event time.</p><div class="compare"><div><span>Coarse step</span><b id="coarseVal">Not run</b></div><div><span>Fine step</span><b id="fineVal">Not run</b></div><div><span>Relative deviation</span><b id="deviationVal">—</b></div></div><div id="convergenceBadge" class="badge pending">Pending</div></div>
+        <div class="card"><h3>Model boundaries</h3><ul class="check-list"><li>Point-mass translational 3-DOF dynamics</li><li>Flat-Earth Cartesian frame over short range</li><li>Constant air density in current build</li><li>Thrust, gravity, drag and variable mass included</li><li>Attitude dynamics and actuator lag excluded</li><li>Results valid only inside stated envelope</li></ul></div>
+      </div>
+      <div class="card requirements"><div class="card-title"><div><h3>Specifications & constraints</h3><span>Live status updates after scenario, campaign and convergence runs</span></div></div><div id="requirementsList"></div></div>
+      <div class="notice amber"><b>Validation still required</b><p>RocketPy/Calisto reference comparison and independent faculty review remain pending. The interface never upgrades those items to “passed” automatically.</p></div>
+    </section>
+  </main>
+  <footer><span>TEAM M044 · Senior Design Simulation</span><span>Client-side computation · No data leaves this browser</span></footer>
+  <script src="app.js"></script>
+</body>
+</html>
